@@ -16,6 +16,7 @@ class Graph(object):
 		else:
 			self.add_weighted(connections)
 
+
 	def add_connections(self, connections):
 		""" Add connections (list of tuple pairs) to graph """
 		for node1, node2 in connections:
@@ -70,6 +71,9 @@ class Graph(object):
 
 		return node1 in self._graph and node2 in self._graph[node1]
 
+	def getNodes(self):
+		return self._graph.keys()
+
 	def getNeighbor(self, v):
 		return self._graph[v]
 
@@ -87,7 +91,7 @@ class Graph(object):
 		return minVertex
 
 
-	def dijkstrasSP(self,source):
+	def dijkstras(self,source):
 		Q = set()
 		dist = dict()
 		prev = dict()
@@ -109,13 +113,48 @@ class Graph(object):
 					prev[i] = u
 		return (dist, prev)
 
+	# def dijkstrasNP(self, v):
+	# 	Q = set()
+	# 	dist = dict()
+	# 	prev = dict()
+
+	# 	for i in self._graph:
+	# 		dist[i] = float("inf")
+	# 		prev[i] = None
+	# 		Q.add(i)
+	# 	dist
+
+
+
+	def shortestPath(self,source, target):
+		d,p = self.dijkstras(source)
+		s = []
+		u = target
+		while p[u]:
+			s = [u] + s
+			u = p[u]
+		s = [u] + s
+		return s
+
 
 	def closenessCentrality(self, v):
 		sumpaths = 0
-		d = self.dijkstrasSP(v)
+		d = self.dijkstras(v)
 		for i in d[0].values():
 			sumpaths += i
 		return sumpaths
+
+
+	def betweennessCentrality(self, v):
+		numpath = 0
+		for s in self.getNodes():
+			if s != v:
+				for t in self.getNodes():
+					if t != s and t != v:
+						path = self.shortestPath(s,t)
+						if v in path:
+							numpath += 1
+		return numpath
 
 	def __str__(self):
 		return '{}({})'.format(self.__class__.__name__, dict(self._graph))
@@ -127,19 +166,33 @@ if __name__ == "__main__":
 		   ("d","i"):30, ("e","f"):18, ("e","g"):23, ("f","h"):24,("f","g"):39,\
 		   ("g","h"):25, ("g","i"):21, ("h","i"):19}
 
+	# connections = {("a","e"):1,("b","e"):1,("c","e"):1,("d","e"):1,("e","a"):1,("e","b"):1,("e","c"):1,("e","d"):1,("b","a"):1,("c","b"):1}
+
 	g = Graph(connections, weighted = True)
-	
-	# print(g._weights)
-	# print(g.dijkstrasSP("a"))
-	print(g.closenessCentrality("a"))
-	print(g.closenessCentrality("b"))
-	print(g.closenessCentrality("c"))
-	print(g.closenessCentrality("d"))
-	print(g.closenessCentrality("e"))
-	print(g.closenessCentrality("f"))
-	print(g.closenessCentrality("g"))
-	print(g.closenessCentrality("h"))
-	print(g.closenessCentrality("i"))
+	print(g.shortestPath("g","d"))
+
+
+	print("a", g.betweennessCentrality("a"))
+	print("b", g.betweennessCentrality("b"))
+	print("c", g.betweennessCentrality("c"))
+	print("d", g.betweennessCentrality("d"))
+	print("e", g.betweennessCentrality("e"))
+	print("f", g.betweennessCentrality("f"))
+	print("g", g.betweennessCentrality("g"))
+	print("h", g.betweennessCentrality("h"))
+	print("i", g.betweennessCentrality("i"))
+
+	# print("a",g.closenessCentrality("a"))
+	# print("b",g.closenessCentrality("b"))
+	# print("c",g.closenessCentrality("c"))
+	# print("d",g.closenessCentrality("d"))
+	# print("e",g.closenessCentrality("e"))
+	# print("f",g.closenessCentrality("f"))
+	# print("g",g.closenessCentrality("g"))
+	# print("h",g.closenessCentrality("h"))
+	# print("i",g.closenessCentrality("i"))
+
+
 
 
 
