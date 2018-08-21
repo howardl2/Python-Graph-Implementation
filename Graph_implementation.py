@@ -1,6 +1,8 @@
 from collections import defaultdict
 import heapq as pq
 
+class NegativeEdgeException(Exception):
+	pass
 
 class Graph(object):
 	""" Graph data structure, undirected by default. """
@@ -14,6 +16,7 @@ class Graph(object):
 		if not self._weighted:
 			self.add_connections(connections)
 		else:
+			self._negativeEdges = False
 			self.add_weighted(connections)
 
 
@@ -39,6 +42,8 @@ class Graph(object):
 		""" Add connection for node pairs with weight of edge """
 		self.add(pair[0],pair[1])
 		self._weights[pair] = edge
+		if edge < 0:
+			self._negativeEdges = True
 		if not self._directed:
 			self._weights[(pair[1],pair[0])] = edge
 
@@ -92,10 +97,12 @@ class Graph(object):
 
 
 	def dijkstras(self,source):
+		if self._negativeEdges:
+			raise NegativeEdgeException("Graph.dijkstras: Unable to run Dijkstra's algorithm on a graph with negative edges.")
 		Q = set()
 		dist = dict()
 		prev = dict()
-		
+
 		for v in self._graph:
 			dist[v] = float("inf")
 			prev[v] = None
@@ -142,7 +149,7 @@ class Graph(object):
 		d = self.dijkstras(v)
 		for i in d[0].values():
 			sumpaths += i
-		return sumpaths
+		return 1/sumpaths
 
 
 	def betweennessCentrality(self, v):
@@ -156,31 +163,67 @@ class Graph(object):
 							numpath += 1
 		return numpath
 
+	def MST(self):
+		Q = set()
+		visited = set()
+		cost = dict()
+		prev = dict()
+		nodes = self.getNodes()
+		for node in nodes:
+			cost[node] = float("inf")
+			prev[node] = None
+			Q.add(node)
+		initialNode = node[0]
+		cost[initialNode] = 0
+
+		while Q:
+			v = self.findMin(Q,cost)
+			print("node",v)
+			Q.remove(v)
+
+			neighbor = self.getNeighbor(v)
+			for n in neighbor:
+				edge = self.getEdgeWeight(v,n)
+				print(n, edge, cost[n])
+				if cost[n] > edge:
+					cost[n] = edge
+					prev[n] = v
+				print(cost[n])
+		return prev
+
+
+
+
 	def __str__(self):
 		return '{}({})'.format(self.__class__.__name__, dict(self._graph))
 
 
 if __name__ == "__main__":
-	connections = {("a","b"):22, ("a","c"):9, ("a","d"):12, ("b","c"):35, ("b","h"):34,\
-		   ("b","f"):36, ("c","f"):42, ("c","e"):65, ("c","d"):4, ("d","e"):33,\
-		   ("d","i"):30, ("e","f"):18, ("e","g"):23, ("f","h"):24,("f","g"):39,\
-		   ("g","h"):25, ("g","i"):21, ("h","i"):19}
+	# connections = {("a","b"):22, ("a","c"):9, ("a","d"):12, ("b","c"):35, ("b","h"):34,\
+	# 	   ("b","f"):36, ("c","f"):42, ("c","e"):65, ("c","d"):4, ("d","e"):33,\
+	# 	   ("d","i"):30, ("e","f"):18, ("e","g"):23, ("f","h"):24,("f","g"):39,\
+	# 	   ("g","h"):25, ("g","i"):21, ("h","i"):19}
 
 	# connections = {("a","e"):1,("b","e"):1,("c","e"):1,("d","e"):1,("e","a"):1,("e","b"):1,("e","c"):1,("e","d"):1,("b","a"):1,("c","b"):1}
 
+
+	connections = {("a","b"):1, ("a","d"):7, ("b","c"):2, ("b","e"):5, ("b","f"):4, ("c","f"):3, ("d","e"):6}
+
 	g = Graph(connections, weighted = True)
-	print(g.shortestPath("g","d"))
 
+	print(g.MST())
+	# print(g.shortestPath("g","d"))
 
-	print("a", g.betweennessCentrality("a"))
-	print("b", g.betweennessCentrality("b"))
-	print("c", g.betweennessCentrality("c"))
-	print("d", g.betweennessCentrality("d"))
-	print("e", g.betweennessCentrality("e"))
-	print("f", g.betweennessCentrality("f"))
-	print("g", g.betweennessCentrality("g"))
-	print("h", g.betweennessCentrality("h"))
-	print("i", g.betweennessCentrality("i"))
+	#
+	# print("a", g.betweennessCentrality("a"))
+	# print("b", g.betweennessCentrality("b"))
+	# print("c", g.betweennessCentrality("c"))
+	# print("d", g.betweennessCentrality("d"))
+	# print("e", g.betweennessCentrality("e"))
+	# print("f", g.betweennessCentrality("f"))
+	# print("g", g.betweennessCentrality("g"))
+	# print("h", g.betweennessCentrality("h"))
+	# print("i", g.betweennessCentrality("i"))
 
 	# print("a",g.closenessCentrality("a"))
 	# print("b",g.closenessCentrality("b"))
@@ -191,14 +234,3 @@ if __name__ == "__main__":
 	# print("g",g.closenessCentrality("g"))
 	# print("h",g.closenessCentrality("h"))
 	# print("i",g.closenessCentrality("i"))
-
-
-
-
-
-
-
-
-
-
-	
