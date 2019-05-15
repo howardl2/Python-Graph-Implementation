@@ -73,13 +73,12 @@ class Graph(object):
 
 	def is_connected(self, node1, node2):
 		""" Is node1 directly connected to node2 """
-
 		return node1 in self._graph and node2 in self._graph[node1]
 
 	def getNodes(self):
 		return self._graph.keys()
 
-	def getNeighbor(self, v):
+	def getNeighbors(self, v):
 		return self._graph[v]
 
 	def getEdgeWeight(self, v, u):
@@ -97,6 +96,7 @@ class Graph(object):
 
 
 	def dijkstras(self,source):
+		""" Shortest paths algorithm using a set """
 		if self._negativeEdges:
 			raise NegativeEdgeException("Graph.dijkstras: Unable to run Dijkstra's algorithm on a graph with negative edges.")
 		Q = set()
@@ -112,7 +112,7 @@ class Graph(object):
 		while Q:
 			u = self.findMin(Q,dist)
 			Q.remove(u)
-			neighbor = self.getNeighbor(u[0])
+			neighbor = self.getNeighbors(u[0])
 			for i in neighbor:
 				alt = dist[u] + self.getEdgeWeight(u,i)
 				if alt < dist[i]:
@@ -164,6 +164,8 @@ class Graph(object):
 		return numpath
 
 	def MST(self):
+		""" Minimum spanning tree """
+		#TODO: forgot which algorithm was used, Boruvka, Krukal, or Prim?
 		Q = set()
 		visited = set()
 		cost = dict()
@@ -178,20 +180,19 @@ class Graph(object):
 
 		while Q:
 			v = self.findMin(Q,cost)
-			print("node",v)
 			Q.remove(v)
 
 			neighbor = self.getNeighbor(v)
 			for n in neighbor:
 				edge = self.getEdgeWeight(v,n)
-				print(n, edge, cost[n])
 				if cost[n] > edge:
 					cost[n] = edge
 					prev[n] = v
-				print(cost[n])
 		return prev
 
-
+	def DFS(self, v):
+		self.visisted[v] = True
+		# TODO: finish
 
 
 	def __str__(self):
@@ -207,11 +208,15 @@ if __name__ == "__main__":
 	# connections = {("a","e"):1,("b","e"):1,("c","e"):1,("d","e"):1,("e","a"):1,("e","b"):1,("e","c"):1,("e","d"):1,("b","a"):1,("c","b"):1}
 
 
-	connections = {("a","b"):1, ("a","d"):7, ("b","c"):2, ("b","e"):5, ("b","f"):4, ("c","f"):3, ("d","e"):6}
+	# connections = {("a","b"):1, ("a","d"):7, ("b","c"):2, ("b","e"):5, ("b","f"):4, ("c","f"):3, ("d","e"):6}
 
-	g = Graph(connections, weighted = True)
+	# g = Graph(connections, weighted = True)
 
-	print(g.MST())
+	connections = [("a","b"), ("a","c"), ("a","d"), ("b","c"), ("b","h"), ("b","f"), ("c","f"),\
+		("c","e"), ("c","d"), ("d","e"), ("d","i"), ("e","f"), ("e","g"), ("f","h"),("f","g"), ("g","h"), ("g","i"), ("h","i")]
+
+	g = Graph(connections, directed = True)
+	print(g.DFS("i"))
 	# print(g.shortestPath("g","d"))
 
 	#
